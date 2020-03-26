@@ -34,7 +34,6 @@ public class CassandraStandaloneTest {
   private static Map<String, Object> dummyAddress = null;
   private static PropertiesCache cach = PropertiesCache.getInstance();
   private static String host = cach.getProperty("contactPoint");
-  private static String port = cach.getProperty("port");
   private static String cassandraKeySpace = cach.getProperty("keyspace");
   private static CassandraConnectionManagerImpl connectionManager =
       (CassandraConnectionManagerImpl)
@@ -55,25 +54,25 @@ public class CassandraStandaloneTest {
     dummyAddress.put(JsonKey.USER_ID, "USR111");
     dummyAddress.put("DummyColumn", "USR111");
 
-    connectionManager.createConnection(host, port, "cassandra", "password", cassandraKeySpace);
+    connectionManager.createConnection(host, "cassandra", "password", cassandraKeySpace);
   }
 
   @Test
   public void testConnectionWithoutUserNameAndPassword() {
-    boolean bool = connectionManager.createConnection(host, port, null, null, cassandraKeySpace);
+    boolean bool = connectionManager.createConnection(host, null, null, cassandraKeySpace);
     assertEquals(true, bool);
   }
 
   @Test
   public void testConnection() {
     boolean bool =
-        connectionManager.createConnection(host, port, "cassandra", "password", cassandraKeySpace);
+        connectionManager.createConnection(host, "cassandra", "password", cassandraKeySpace);
     assertEquals(true, bool);
   }
 
   @Test(expected = ProjectCommonException.class)
   public void testFailedConnection() {
-    connectionManager.createConnection("127.0.0.1", "9042", "cassandra", "pass", "eySpace");
+    connectionManager.createConnection("127.0.0.1", "cassandra", "pass", "eySpace");
   }
 
   @Test(expected = ProjectCommonException.class)
@@ -269,7 +268,7 @@ public class CassandraStandaloneTest {
 
   @Test
   public void testZaDeleteFailedOp() {
-    boolean bool = connectionManager.createConnection(host, port, null, null, cassandraKeySpace);
+    boolean bool = connectionManager.createConnection(host, null, null, cassandraKeySpace);
     assertTrue(bool);
   }
 

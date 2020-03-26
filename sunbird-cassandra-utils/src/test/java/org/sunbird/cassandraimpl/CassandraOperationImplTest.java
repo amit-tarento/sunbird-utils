@@ -84,7 +84,6 @@ public class CassandraOperationImplTest {
   private static Map<String, Object> dummyAddress = null;
   private static PropertiesCache cach = PropertiesCache.getInstance();
   private static String host = cach.getProperty("contactPoint");
-  private static String port = cach.getProperty("port");
   private static String cassandraKeySpace = cach.getProperty("keyspace");
   private static final Cluster.Builder builder = PowerMockito.mock(Cluster.Builder.class);
   private static BoundStatement boundStatement;
@@ -113,14 +112,13 @@ public class CassandraOperationImplTest {
     metadata = PowerMockito.mock(Metadata.class);
     when(cluster.getMetadata()).thenReturn(metadata);
     when(Cluster.builder()).thenReturn(builder);
-    when(builder.addContactPoint(Mockito.anyString())).thenReturn(builder);
-    when(builder.withPort(Mockito.anyInt())).thenReturn(builder);
+    when(builder.addContactPoints(host)).thenReturn(builder);
     when(builder.withProtocolVersion(Mockito.any())).thenReturn(builder);
     when(builder.withRetryPolicy(Mockito.any())).thenReturn(builder);
     when(builder.withTimestampGenerator(Mockito.any())).thenReturn(builder);
     when(builder.withPoolingOptions(Mockito.any())).thenReturn(builder);
     when(builder.build()).thenReturn(cluster);
-    connectionManager.createConnection(host, port, "cassandra", "password", cassandraKeySpace);
+    connectionManager.createConnection(host, "cassandra", "password", cassandraKeySpace);
   }
 
   @Before

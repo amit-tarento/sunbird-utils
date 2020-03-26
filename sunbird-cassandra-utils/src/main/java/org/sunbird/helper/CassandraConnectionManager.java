@@ -17,14 +17,12 @@ public interface CassandraConnectionManager {
    * Method to create the cassandra connection .
    *
    * @param ip
-   * @param port
    * @param userName
    * @param password
    * @param keyspace
    * @return
    */
-  boolean createConnection(
-      String ip, String port, String userName, String password, String keyspace);
+  boolean createConnection(String ip, String userName, String password, String keyspace);
 
   /**
    * Method to get the cassandra session oject on basis of keyspace name provided .

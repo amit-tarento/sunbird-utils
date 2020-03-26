@@ -8,7 +8,6 @@ import com.datastax.driver.core.HostDistance;
 import com.datastax.driver.core.Metadata;
 import com.datastax.driver.core.PoolingOptions;
 import com.datastax.driver.core.ProtocolVersion;
-import com.datastax.driver.core.QueryLogger;
 import com.datastax.driver.core.QueryOptions;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.TableMetadata;
@@ -51,30 +50,27 @@ public class CassandraConnectionManagerImpl implements CassandraConnectionManage
    * from properties file .
    *
    * @param ip
-   * @param port
    * @param userName
    * @param password
    * @param keyspace
    * @return boolean
    */
   @Override
-  public boolean createConnection(
-      String ip, String port, String userName, String password, String keyspace) {
-    return createStandaloneConnection(ip, port, userName, password, keyspace);
+  public boolean createConnection(String ip, String userName, String password, String keyspace) {
+    return createStandaloneConnection(ip, userName, password, keyspace);
   }
 
   /**
    * Method to create the standalone cassandra connection .
    *
-   * @param ip
-   * @param port
+   * @param nodes
    * @param userName
    * @param password
    * @param keyspace
    * @return
    */
   private boolean createStandaloneConnection(
-      String ip, String port, String userName, String password, String keyspace) {
+      String nodes, String userName, String password, String keyspace) {
 
     Session cassandraSession = null;
     boolean connection = false;
@@ -103,9 +99,9 @@ public class CassandraConnectionManagerImpl implements CassandraConnectionManage
         poolingOptions.setPoolTimeoutMillis(
             Integer.parseInt(cache.getProperty(Constants.POOL_TIMEOUT)));
         if (!StringUtils.isBlank(userName) && !StringUtils.isBlank(password)) {
-          cluster = createCluster(ip, port, userName, password, poolingOptions);
+          cluster = createCluster(nodes, userName, password, poolingOptions);
         } else {
-          cluster = createCluster(ip, port, poolingOptions);
+          cluster = createCluster(nodes, poolingOptions);
         }
         cassandraSession = cluster.connect(keyspace);
 
@@ -163,19 +159,23 @@ public class CassandraConnectionManagerImpl implements CassandraConnectionManage
   /**
    * Create cassandra cluster with user credentials.
    *
-   * @param ip IP address of cluster node
-   * @param port Port of cluster node
+   * @param nodes IP address of cluster node
    * @param userName DB username
    * @param password DB password
    * @param poolingOptions Pooling options
    * @return Cassandra cluster
    */
   private static Cluster createCluster(
-      String ip, String port, String userName, String password, PoolingOptions poolingOptions) {
+      String nodes, String userName, String password, PoolingOptions poolingOptions) {
+    String[] hosts = null;
+    if (StringUtils.isNotBlank(nodes)) {
+      hosts = nodes.split(",");
+    } else {
+      hosts = new String[] {"localhost"};
+    }
     Cluster.Builder builder =
         Cluster.builder()
-            .addContactPoint(ip)
-            .withPort(Integer.parseInt(port))
+            .addContactPoints(hosts)
             .withProtocolVersion(ProtocolVersion.V3)
             .withRetryPolicy(DefaultRetryPolicy.INSTANCE)
             .withTimestampGenerator(new AtomicMonotonicTimestampGenerator())
@@ -201,12 +201,11 @@ public class CassandraConnectionManagerImpl implements CassandraConnectionManage
    * Create cassandra cluster.
    *
    * @param ip IP address of cluster node
-   * @param port Port of cluster node
    * @param poolingOptions Pooling options
    * @return Cassandra cluster
    */
-  private static Cluster createCluster(String ip, String port, PoolingOptions poolingOptions) {
-    return createCluster(ip, port, null, null, poolingOptions);
+  private static Cluster createCluster(String ip, PoolingOptions poolingOptions) {
+    return createCluster(ip, null, null, poolingOptions);
   }
 
   @Override

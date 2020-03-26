@@ -18,19 +18,18 @@ public class CassandraTest {
 
   private static PropertiesCache cach = PropertiesCache.getInstance();
   private static String host = cach.getProperty("contactPoint");
-  private static String port = cach.getProperty("port");
   private static CassandraConnectionManagerImpl connectionManager =
       (CassandraConnectionManagerImpl) CassandraConnectionMngrFactory.getObject(JsonKey.EMBEDDED);
 
   @Test
   public void testConnection() {
-    boolean bool = connectionManager.createConnection(host, port, "", "", "sunbird1");
+    boolean bool = connectionManager.createConnection(host, "", "", "sunbird1");
     assertEquals(true, bool);
   }
 
   @Test
   public void testConnectionB() {
-    boolean bool = connectionManager.createConnection(host, port, "", "", "sunbird12");
+    boolean bool = connectionManager.createConnection(host, "", "", "sunbird12");
     assertEquals(true, bool);
   }
 

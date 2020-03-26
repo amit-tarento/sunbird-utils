@@ -7,11 +7,11 @@ import static org.powermock.api.mockito.PowerMockito.when;
 
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Metadata;
+import com.datastax.driver.core.ProtocolVersion;
 import com.datastax.driver.core.Session;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
@@ -35,6 +35,7 @@ import org.sunbird.helper.CassandraConnectionMngrFactory;
   Metadata.class,
   Cluster.Builder.class,
   CassandraUtil.class,
+  ProtocolVersion.class,
   CassandraConnectionMngrFactory.class,
 })
 @PowerMockIgnore("javax.management.*")
@@ -42,7 +43,6 @@ public class ConnectionManagerTest {
 
   private static PropertiesCache cach = PropertiesCache.getInstance();
   private static String host = cach.getProperty("contactPoint");
-  private static String port = cach.getProperty("port");
   private static String cassandraKeySpace = cach.getProperty("keyspace");
   private static final Cluster.Builder builder = PowerMockito.mock(Cluster.Builder.class);
   private static Cluster cluster;
@@ -63,14 +63,13 @@ public class ConnectionManagerTest {
     metadata = PowerMockito.mock(Metadata.class);
     when(cluster.getMetadata()).thenReturn(metadata);
     when(Cluster.builder()).thenReturn(builder);
-    when(builder.addContactPoint(Mockito.anyString())).thenReturn(builder);
-    when(builder.withPort(Mockito.anyInt())).thenReturn(builder);
+    when(builder.addContactPoints(host)).thenReturn(builder);
     when(builder.withProtocolVersion(Mockito.any())).thenReturn(builder);
     when(builder.withRetryPolicy(Mockito.any())).thenReturn(builder);
     when(builder.withTimestampGenerator(Mockito.any())).thenReturn(builder);
     when(builder.withPoolingOptions(Mockito.any())).thenReturn(builder);
     when(builder.build()).thenReturn(cluster);
-    connectionManager.createConnection(host, port, "cassandra", "password", cassandraKeySpace);
+    connectionManager.createConnection(host, "cassandra", "password", cassandraKeySpace);
   }
 
   @Before
@@ -83,7 +82,7 @@ public class ConnectionManagerTest {
   @Test
   public void testCreateConnectionSuccessWithoutUsernameAndPassword() throws Exception {
 
-    boolean bool = connectionManager.createConnection(host, port, null, null, cassandraKeySpace);
+    boolean bool = connectionManager.createConnection(host, null, null, cassandraKeySpace);
     assertEquals(true, bool);
   }
 
@@ -91,7 +90,7 @@ public class ConnectionManagerTest {
   public void testCreateConnectionSuccessWithUserNameAndPassword() throws Exception {
 
     Boolean bool =
-        connectionManager.createConnection(host, port, "cassandra", "password", cassandraKeySpace);
+        connectionManager.createConnection(host, "cassandra", "password", cassandraKeySpace);
     assertEquals(true, bool);
   }
 
@@ -99,7 +98,7 @@ public class ConnectionManagerTest {
   public void testCreateConnectionFailure() {
 
     try {
-      connectionManager.createConnection("127.0.0.1", "9042", "cassandra", "pass", "eySpace");
+      connectionManager.createConnection("127.0.0.1", "cassandra", "pass", "eySpace");
     } catch (Exception ex) {
     }
     assertTrue(500 == ResponseCode.SERVER_ERROR.getResponseCode());
